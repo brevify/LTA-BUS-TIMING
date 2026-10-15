@@ -1,0 +1,6 @@
+{
+  "name": "SG Bus Arrival Tracker & Live Fleet Radar",
+  "description": "Real-time Singapore LTA bus arrival timings, live GPS fleet tracking, crowd capacity indicators, and intelligent wait time predictions across Singapore bus stops.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
