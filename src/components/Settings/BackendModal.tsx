@@ -51,21 +51,27 @@ export const BackendModal: React.FC<BackendModalProps> = ({
         headers['AccountKey'] = config.ltaAccountKey;
       }
 
-      const res = await fetch(`${config.backendBaseUrl}/BusArrivalv2?BusStopCode=01012`, {
-        headers,
-      });
+      let testUrl = config.backendBaseUrl;
+      const sep = testUrl.includes('?') ? '&' : '?';
+      if (testUrl.includes('BusArrival') || testUrl.includes('busarrival')) {
+        testUrl = `${testUrl}${sep}BusStopCode=83139`;
+      } else {
+        testUrl = `${testUrl.replace(/\/+$/, '')}/busarrival${sep}BusStopCode=83139`;
+      }
+
+      const res = await fetch(testUrl, { headers });
+      const data = await res.json();
 
       if (res.ok) {
-        const data = await res.json();
         setTestingStatus('success');
-        setTestMessage(`Connection verified! Received ${data.Services?.length || 0} services from backend.`);
+        setTestMessage(`Success! Received ${data.Services?.length || 0} services from LTA DataMall for Stop 83139.`);
       } else {
         setTestingStatus('error');
-        setTestMessage(`Backend returned HTTP status ${res.status}: ${res.statusText}`);
+        setTestMessage(data.message || `Backend returned HTTP ${res.status}: ${res.statusText}`);
       }
     } catch (err: any) {
       setTestingStatus('error');
-      setTestMessage(`Failed to reach backend: ${err.message || 'Network error'}. Check CORS or endpoint URL.`);
+      setTestMessage(`Failed to reach backend: ${err.message || 'Network error'}. Check URL.`);
     }
   };
 
@@ -167,7 +173,7 @@ export const BackendModal: React.FC<BackendModalProps> = ({
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 font-mono"
                 />
                 <span className="text-[11px] text-slate-500 mt-1 block">
-                  The frontend will request <code className="text-emerald-400 font-mono">/BusArrivalv2?BusStopCode=...</code>
+                  The frontend will request <code className="text-emerald-400 font-mono">/api/busarrival?BusStopCode=...</code>
                 </span>
               </div>
 
@@ -231,18 +237,13 @@ export const BackendModal: React.FC<BackendModalProps> = ({
               <span>Backend Implementation Blueprint</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              When ready, implement a simple Express proxy route in your backend to relay requests to LTA DataMall and bypass CORS:
+              Serverless endpoints are stored in <code className="text-emerald-400 font-mono">/api/busarrival.ts</code> and <code className="text-emerald-400 font-mono">/api/health.ts</code>. Simply configure your <code className="text-emerald-400 font-mono">LTA_ACCOUNT_KEY</code>:
             </p>
             <pre className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[11px] font-mono text-emerald-300 overflow-x-auto leading-relaxed">
-{`app.get('/api/lta/BusArrivalv2', async (req, res) => {
-  const { BusStopCode } = req.query;
-  const ltaRes = await fetch(
-    \`https://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=\${BusStopCode}\`,
-    { headers: { AccountKey: process.env.LTA_ACCOUNT_KEY } }
-  );
-  const data = await ltaRes.json();
-  res.json(data);
-});`}
+{`// GET https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival?BusStopCode=83139
+// Route: /api/busarrival?BusStopCode=83139
+// Health Check: /api/health
+// Header passed: AccountKey: process.env.LTA_ACCOUNT_KEY`}
             </pre>
           </div>
         </div>

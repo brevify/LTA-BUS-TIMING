@@ -30,7 +30,7 @@ export function getBackendConfig(): BackendConfig {
   }
   return {
     useCustomBackend: false,
-    backendBaseUrl: '/api/lta',
+    backendBaseUrl: '/api/busarrival',
     ltaAccountKey: '',
   };
 }
@@ -182,14 +182,21 @@ export async function getBusArrivals(
       if (config.ltaAccountKey) {
         headers['AccountKey'] = config.ltaAccountKey;
       }
-      // Standard LTA API format: /BusArrivalv2?BusStopCode=01012
-      const url = `${config.backendBaseUrl}/BusArrivalv2?BusStopCode=${encodeURIComponent(busStopCode)}`;
+      let url = config.backendBaseUrl;
+      const sep = url.includes('?') ? '&' : '?';
+      if (url.includes('BusArrival') || url.includes('busarrival')) {
+        url = `${url}${sep}BusStopCode=${encodeURIComponent(busStopCode)}`;
+      } else {
+        url = `${url.replace(/\/+$/, '')}/busarrival${sep}BusStopCode=${encodeURIComponent(busStopCode)}`;
+      }
       const res = await fetch(url, { headers });
       if (res.ok) {
         const data = await res.json();
         if (data.Services && Array.isArray(data.Services)) {
           return data;
         }
+      } else {
+        console.warn(`Backend responded with ${res.status} ${res.statusText}`);
       }
     } catch (err) {
       console.warn('Custom backend error, fallback to real-time simulation:', err);

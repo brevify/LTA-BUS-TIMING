@@ -35,6 +35,14 @@ export const SINGAPORE_BUS_STOPS: BusStop[] = [
     Longitude: 103.85728,
     Services: ['7', '14', '36', '65', '147', '851'],
   },
+  {
+    BusStopCode: '83139',
+    RoadName: 'Marine Parade Rd',
+    Description: 'Opp Parkway Parade',
+    Latitude: 1.30234,
+    Longitude: 103.90485,
+    Services: ['15', '36', '43', '48', '135', '196', '197'],
+  },
 
   // Orchard & Dhoby Ghaut Corridor
   {
